@@ -19,6 +19,10 @@ describe "Authentication" do
 
   		it { should have_title('Sign in') }
   		it { should have_selector('div.alert.alert-error') }
+      it { should_not have_link('Users') }
+      it { should_not have_link('Profile') }
+      it { should_not have_link('Settings') } 
+      it { should_not have_link('Sign out') }
   	
   		describe "after visiting another page" do 
   			before { click_link "Home" }
@@ -92,6 +96,16 @@ describe "Authentication" do
 
       describe "submitting a PATCH request to the Users#update action" do 
         before { patch user_path(wrong_user) }
+        specify { expect(response).to redirect_to(root_url) }
+      end
+
+      describe "submitting GET request to Users#new action" do 
+        before { get signup_path }
+        specify { expect(response).to redirect_to(root_url) }
+      end
+
+      describe "submitting GET request to Users#create action" do 
+        before { get signin_path }
         specify { expect(response).to redirect_to(root_url) }
       end
     end
