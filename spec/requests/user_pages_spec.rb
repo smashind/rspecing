@@ -27,26 +27,35 @@ describe "User Pages" do
         end
       end
     end
+  end
 
-    describe "delete links" do 
+  # fhj: I could not get this to work as done in the book (i.e. placing this
+  # above inside the "index" block). It could not execute sign_in admin
+  # because it was already signed in as a non-admin user. I tried the
+  # suggestion to create a sign_out helper function, but I could not make
+  # that work either. By moving it outside of the block and recreating
+  # the 30 test users, I was able to get it to pass the tests.
+  # I also created the "non-admin user should not have delete links" block
+  # at the end of the "pagination" block above to test for that case properly.
+  describe "delete links" do
 
-      it { should_not have_link('delete') }
+    before(:all) { 30.times { FactoryGirl.create(:user) } }
+    after(:all)  { User.delete_all }
 
-      describe "as an admin user" do 
-        let(:admin) { FactoryGirl.create(:admin) }
-        before do 
-          sign_in admin
-          visit users_path
-        end
-
-        it { should have_link('delete', href: user_path(User.first)) }
-        it "should be able to delete another user" do 
-          expect do 
-            click_link('delete', match: :first)
-          end.to change(User, :count).by(-1)
-        end
-        it { should_not have_link('delete', href: user_path(admin)) }
+    describe "as an admin user" do
+      let(:admin) { FactoryGirl.create(:admin) }
+      before do
+        sign_in admin
+        visit users_path
       end
+
+      it { should have_link('delete', href: user_path(User.first)) }
+      it "should be able to delete another user" do
+        expect do
+          click_link('delete', match: :first)
+        end.to change(User, :count).by(-1)
+      end
+      it { should_not have_link('delete', href: user_path(admin)) }
     end
   end
 
@@ -146,6 +155,23 @@ describe "User Pages" do
       it { should have_link('Sign out', href: signout_path) }
       specify { expect(user.reload.name).to eq new_name }
       specify { expect(user.reload.email).to eq new_email }
+    end
+  end
+
+  describe "profile page" do 
+    let(:user) { FactoryGirl.create(:user) }
+    let!(:m1) { FactoryGirl.create(:micropost, user: user, content: "Foo") }
+    let!(:m2) { FactoryGirl.create(:micropost, user: user, content: "Bar") }
+
+    before { visit user_path(user) }
+
+    it { should have_content(user.name) }
+    it { should have_title(user.name) }
+
+    describe "microposts" do 
+      it { should have_content(m1.content) }
+      it { should have_content(m2.content) }
+      it { should have_content(user.microposts.count) }
     end
   end
 end
