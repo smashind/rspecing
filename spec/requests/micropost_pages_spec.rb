@@ -42,4 +42,26 @@ describe "MicropostPages" do
   		end
   	end
   end
+
+  describe "micropost count" do 
+
+  	describe "with one post" do 
+  		before { FactoryGirl.create(:micropost, user: user) }
+  		before { visit root_path }
+
+  		it "should say 1 micropost" do 
+  			expect(page).to have_content("1 micropost")
+  		end
+  	end
+
+  	describe "with more than one post" do 
+  		before { FactoryGirl.create(:micropost, user: user) }
+  		before { FactoryGirl.create(:micropost, user: user) }
+  		before { visit root_path }
+
+  		it "should say 2 microposts" do 
+  			expect(page).to have_content("2 microposts")
+  		end
+  	end
+  end
 end
